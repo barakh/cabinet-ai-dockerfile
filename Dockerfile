@@ -21,6 +21,12 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     g++ \
     && rm -rf /var/lib/apt/lists/*
 
+# Ensure interactive shells (docker exec) can run the Claude Code CLI, which
+# the installer places at ~/.local/bin/claude. Cabinet resolves providers via
+# its own runtime PATH, so this only affects shells — it doesn't change how the
+# daemon finds the CLI.
+RUN printf '%s\n' 'export PATH="$HOME/.local/bin:$PATH"' >> /root/.bashrc
+
 WORKDIR /app
 
 # Copy the source tree. The package.json `postinstall` hook (scripts/postinstall.mjs)
