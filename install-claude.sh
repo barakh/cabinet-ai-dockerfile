@@ -2,15 +2,17 @@
 # Install the Claude Code CLI inside the running Cabinet container.
 #
 # Cabinet needs a supported provider CLI (Claude Code or Codex) to run agents.
-# This execs into the running container and installs Claude Code via:
+# This execs into the running container, installs Claude Code via:
 #   curl -fsSL https://claude.ai/install.sh | bash
+# then launches `claude login` so you can authenticate. The installer drops the
+# binary at ~/.local/bin/claude; the exec shell is non-interactive (no .bashrc),
+# so PATH is set explicitly here.
 #
 # Usage: ./install-claude.sh [--name <container>]
 #
-# NOTE: installs inside a running container are ephemeral — they vanish when
-# the container is replaced or recreated. For a persistent install, either
-# commit the container (`docker commit <name> <image>`) or add the install to
-# the Dockerfile.
+# NOTE: installs AND auth inside a running container are ephemeral — they vanish
+# when the container is replaced or recreated. For persistence, either commit the
+# container (`docker commit <name> <image>`) or mount a volume for /root/.claude.
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -34,8 +36,10 @@ echo "Installing Claude Code inside container '$NAME' ..."
 docker exec -it "$NAME" bash -c 'curl -fsSL https://claude.ai/install.sh | bash'
 
 echo
-echo "Claude Code installed. Authenticate inside the container to finish:"
-echo "  docker exec -it $NAME claude"
+echo "Authenticating Claude Code inside container '$NAME' (follow the printed URL to log in) ..."
+docker exec -it "$NAME" bash -lc 'export PATH="$HOME/.local/bin:$PATH"; claude login'
+
 echo
-echo "Remember: this does not persist across container rebuilds. Commit it if needed:"
+echo "Claude Code installed and logged in."
+echo "Remember: this does not persist across container rebuilds. Commit it to persist:"
 echo "  docker commit $NAME ${IMAGE:-cabinet:local}"
