@@ -1,0 +1,26 @@
+services:
+  cabinet:
+    build:
+      context: ../cabinet
+      dockerfile: ../cabinet-ai-dockerfile/Dockerfile
+    image: cabinet:local
+    container_name: cabinet
+    ports:
+      - "4000:4000"   # app
+      - "4100:4100"   # daemon (websockets / scheduled jobs)
+    volumes:
+      # Default: keep data in the named 'cabinet-data' volume.
+      # To use a local folder instead, export CABINET_DATA_DIR with an absolute
+      # path, e.g.:  CABINET_DATA_DIR=/home/me/cabinet-data docker compose up -d
+      - ${CABINET_DATA_DIR:-cabinet-data}:/app/data
+    restart: unless-stopped
+    # Optional: protect the UI with a password.
+    # environment:
+    #   - KB_PASSWORD=change-me
+    # Optional: when accessed from another machine, point the browser at the
+    # reachable host/ports:
+    #   - CABINET_APP_ORIGIN=http://<host-or-ip>:4000
+    #   - CABINET_PUBLIC_DAEMON_ORIGIN=ws://<host-or-ip>:4100
+
+volumes:
+  cabinet-data:
