@@ -72,22 +72,29 @@ CABINET_DATA_DIR=/home/me/cabinet-data docker compose up -d
 
 Open http://localhost:4000.
 
-## Installing Claude Code
+## Installing and authenticating Claude Code
 
 Cabinet needs a supported AI provider CLI (Claude Code or Codex) to run
 agents — it doesn't ship with one. Install Claude Code inside the running
-container:
+container and log in with one command:
 
 ```bash
 ./run.sh --detach          # start the container first
-./install-claude.sh        # installs Claude Code inside it
-docker exec -it cabinet claude   # authenticate to finish setup
+./install-claude.sh        # installs Claude Code, then launches `claude login`
 ```
 
-> **Note:** installs inside a running container are ephemeral and are lost
-> when the container is recreated. To persist the install, commit the
-> container (`docker commit cabinet cabinet:local`) or add the install command
-> to the Dockerfile.
+`install-claude.sh` runs the Claude Code installer and then opens an
+interactive `claude login` — follow the printed URL in the installer output
+to authorize. If you need to log in again later:
+
+```bash
+docker exec -it cabinet bash -lc 'export PATH="$HOME/.local/bin:$PATH"; claude login'
+```
+
+> **Note:** installs and auth inside a running container are ephemeral and are
+> lost when the container is recreated. To persist, commit the container
+> (`docker commit cabinet cabinet:local`) or mount a volume at `/root/.claude`
+> (which stores both the CLI and the credential).
 
 ## Configuration
 
